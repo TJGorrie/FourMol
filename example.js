@@ -51,10 +51,12 @@ function readFile(file, badids, badatoms, badbonds, opacity){
         // Draw Good Atoms + Bonds
         o.addRepresentation('ball+stick',{
           aspectRatio:2, sele:'@'.concat(diff), multipleBond:'symmetric'})
-      
-        let shape = new NGL.Shape("shape", {
-          dashedCylinder: true});
-
+        if (glow){
+          o.addRepresentation("point", {
+          sele: '@'.concat(badids), sizeAttenuation: true,pointSize: 7, opacity: 0.6, useTexture: true, alphaTest: 0.0, edgeBleach: 1.0,forceTransparent: true,sortParticles: true, color:'limegreen'})
+        }
+     dashing = (badbonds == 'dashed') ? true:false
+     let shape = new NGL.Shape("shape", {dashedCylinder: dashing});
     // Draw bad Bonds
     switch(badbonds){
       case 'normal':
@@ -63,6 +65,52 @@ function readFile(file, badids, badatoms, badbonds, opacity){
           multipleBond:'symmetric', 
           opacity: opacity
         })
+        break;
+      case 'tritone':
+        bonds = o.object.bondStore;
+        n = bonds.atomIndex1;
+        m = bonds.atomIndex2;
+        n.forEach((num1, index) => {
+          const num2 = m[index];
+          if (badids.includes(num1) || badids.includes(num2) ){
+            acoord = [o.object.atomStore.x[num1],
+                      o.object.atomStore.y[num1],
+                      o.object.atomStore.z[num1]]
+            bcoord = [o.object.atomStore.x[num2],
+                      o.object.atomStore.y[num2],
+                      o.object.atomStore.z[num2]]
+            // This math is off.
+            xdist = bcoord[0] - acoord[0]
+            ydist = bcoord[1] - acoord[1]
+            zdist = bcoord[2] - acoord[2]
+            var sx = bcoord[0] - acoord[0] 
+            var sy = bcoord[1] - acoord[1]
+            var sz = bcoord[2] - acoord[2]
+                
+            length = (sx**2 + sy**2 + sz**2)**.5
+            var unitSlopeX = sx / length
+            var unitSlopeY = sy / length
+            var unitSlopeZ = sz / length
+                
+            a2coord = [acoord[0] + (xdist/3),
+                       acoord[1] + (ydist/3),
+                       acoord[2] + (zdist/3)
+                      ]
+            a3coord = [a2coord[0] + (xdist/3),
+                       a2coord[1] + (ydist/3),
+                       a2coord[2] + (zdist/3)
+                      ]
+            
+           // order is startxyz, endxyz, colour, radius, name
+           atoa2 = ElementColors[o.object.atomMap.list[num1].element]
+           a3tob = ElementColors[o.object.atomMap.list[num2].element]
+           shape.addCylinder(acoord, a2coord, [atoa2[0]/255,atoa2[1]/255,atoa2[2]/255], .1, 'x')
+           shape.addCylinder(a2coord, a3coord, [208/255,208/255,224/255], .1, 'x')
+           shape.addCylinder(a3coord, bcoord, [a3tob[0]/255,a3tob[1]/255,a3tob[2]/255], .1, 'x')          
+           }
+        })
+        var bondComp = stage.addComponentFromObject(shape);
+        bondComp.addRepresentation("buffer", {opacity: opacity});
         break;
       case 'dashed':
         bonds = o.object.bondStore;        
@@ -84,7 +132,7 @@ function readFile(file, badids, badatoms, badbonds, opacity){
                 // This math is off.
                 var sx = bcoord[0] - acoord[0] 
                 var sy = bcoord[1] - acoord[1]
-                var sz = bcoord[2] - bcoord[2]
+                var sz = bcoord[2] - acoord[2]
                 
                 length = (sx**2 + sy**2 + sz**2)**.5
                 var unitSlopeX = sx / length
@@ -92,14 +140,14 @@ function readFile(file, badids, badatoms, badbonds, opacity){
                 var unitSlopeZ = sz / length
                 
                 a2coord = [
-                           acoord[0] + unitSlopeX * .1,
-                           acoord[1] + unitSlopeY * .1,
-                           acoord[2] + unitSlopeZ * .1
+                           acoord[0] + (unitSlopeX * .1),
+                           acoord[1] + (unitSlopeY * .1),
+                           acoord[2] + (unitSlopeZ * .1)
                           ]
                 b2coord = [
-                           bcoord[0] + unitSlopeX * .1,
-                           bcoord[1] + unitSlopeY * .1,
-                           bcoord[2] + unitSlopeZ * .1
+                           bcoord[0] - (unitSlopeX * .1),
+                           bcoord[1] - (unitSlopeY * .1),
+                           bcoord[2] - (unitSlopeZ * .1)
                           ]
                 // Create handle for count is exceeded!
                 // order is startxyz, endxyz, colour, radius, name
@@ -151,6 +199,17 @@ function readFile(file, badids, badatoms, badbonds, opacity){
   })
 }
 
-readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072_0.mol', badids=[0,1,2,3,4, 11,12,13], badatoms = 'spiky', badbonds = 'dashed', opacity = 1);
-//readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0104_0.mol', badids=[15,14,13,12], badatoms = 'normal', badbonds = 'dashed');
-//readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0161_0.mol', badids=[0,1,2,3]);
+
+function readMap(file){
+  fetch(file).then(function(x){
+    stage.loadFile(file, {ext:'ccp4'}).then(function(o){
+      o.addRepresentation('surface', {color:'orange', isolevel:2, smooth:40, boxSize:5, contour:true, wrap:true})
+    })
+  })
+}
+
+readMap('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072-event_2_1-BDC_0.27_map.native.P1.ccp4')
+
+readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072_0.mol', badids=[0,1,2,3,4,11,12,13], badatoms = 'spiky', badbonds = 'dashed', opacity = 1, glow=true);
+//readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0104_0.mol', badids=[15,14,13,12], badatoms = 'spiky', badbonds = 'normal', opacity=.2);
+//readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0161_0.mol', badids=[0,1,2,3], badatoms='spiky', badbonds='normal', opacity=.2);
