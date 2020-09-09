@@ -45,20 +45,34 @@ function readFile(file, badids, badatoms, badbonds, opacity){
     var idx = [...Array(matches.length).keys()]
     let diff = idx.filter(x => !badids.includes(x)) 
     stage.loadFile(file).then(function(o){
-        // Create Frame, balls don't render, nor do bonds
-        o.addRepresentation('ball+stick', {aspectRatio:0, radius:0, //sele:'@'.concat(diff), 
+      // Create Frame, balls don't render, nor do bonds
+      o.addRepresentation('ball+stick', {aspectRatio:0, radius:0, //sele:'@'.concat(diff), 
                                            multipleBond:'symmetric'}) 
-        // Draw Good Atoms + Bonds
-        o.addRepresentation('ball+stick',{
+      // Draw Good Atoms + Bonds
+      o.addRepresentation('ball+stick',{
           aspectRatio:2, sele:'@'.concat(diff), multipleBond:'symmetric'})
-        if (glow){
-          o.addRepresentation("point", {
-          sele: '@'.concat(badids), sizeAttenuation: true,pointSize: 7, opacity: 0.6, useTexture: true, alphaTest: 0.0, edgeBleach: 1.0,forceTransparent: true,sortParticles: true, color:'limegreen'})
+      switch(glow){
+          case 0:
+            break;
+          case 1:
+            // Show good atoms (not bad atoms)
+            o.addRepresentation("point", {sele: '@'.concat(diff), sizeAttenuation: true,pointSize: 7, 
+                                          opacity: 0.6, useTexture: true, alphaTest: 0.0, 
+                                          edgeBleach: 1.0,forceTransparent: true,
+                                          sortParticles: true, color:'limegreen'})
+            break;
+          case 2:
+            // Show bad atoms
+            o.addRepresentation("point", {sele: '@'.concat(badids), sizeAttenuation: true,pointSize: 7, 
+                                          opacity: 0.6, useTexture: true, alphaTest: 0.0, 
+                                          edgeBleach: 1.0,forceTransparent: true,
+                                          sortParticles: true, color:'limegreen'})
+            break;
         }
-     dashing = (badbonds == 'dashed') ? true:false
-     let shape = new NGL.Shape("shape", {dashedCylinder: dashing});
-    // Draw bad Bonds
-    switch(badbonds){
+      dashing = (badbonds == 'dashed') ? true:false
+      let shape = new NGL.Shape("shape", {dashedCylinder: dashing});
+      // Draw bad Bonds
+      switch(badbonds){
       case 'normal':
         o.addRepresentation('ball+stick', {
           cylinderOnly:true, 
@@ -104,9 +118,9 @@ function readFile(file, badids, badatoms, badbonds, opacity){
            // order is startxyz, endxyz, colour, radius, name
            atoa2 = ElementColors[o.object.atomMap.list[num1].element]
            a3tob = ElementColors[o.object.atomMap.list[num2].element]
-           shape.addCylinder(acoord, a2coord, [atoa2[0]/255,atoa2[1]/255,atoa2[2]/255], .1, 'x')
-           shape.addCylinder(a2coord, a3coord, [208/255,208/255,224/255], .1, 'x')
-           shape.addCylinder(a3coord, bcoord, [a3tob[0]/255,a3tob[1]/255,a3tob[2]/255], .1, 'x')          
+           shape.addCylinder(acoord, a2coord, [atoa2[0]/255,atoa2[1]/255,atoa2[2]/255], .1, 'This is a bad bond')
+           shape.addCylinder(a2coord, a3coord, [208/255,208/255,224/255], .1, 'This is a bad bond')
+           shape.addCylinder(a3coord, bcoord, [a3tob[0]/255,a3tob[1]/255,a3tob[2]/255], .1, 'This is a bad bond')          
            }
         })
         var bondComp = stage.addComponentFromObject(shape);
@@ -153,11 +167,11 @@ function readFile(file, badids, badatoms, badbonds, opacity){
                 // order is startxyz, endxyz, colour, radius, name
                 a1c = ElementColors[o.object.atomMap.list[num1].element]
                 a2c = ElementColors[o.object.atomMap.list[num2].element]
-                shape.addCylinder(acoord, bcoord, [a1c[0]/255,a1c[1]/255,a1c[2]/255], .1, 'x')
+                shape.addCylinder(acoord, bcoord, [a1c[0]/255,a1c[1]/255,a1c[2]/255], .1, 'This is a bad bond')
                 if (o.object.atomMap.list[num1].element == o.object.atomMap.list[num2].element){
-                  shape.addCylinder(a2coord, b2coord, [208/255,208/255,224/255], .1, 'x')
+                  shape.addCylinder(a2coord, b2coord, [208/255,208/255,224/255], .1, 'This is a bad bond')
                 } else {
-                  shape.addCylinder(a2coord, b2coord, [a2c[0]/255,a2c[1]/255,a2c[2]/255], .1, 'x')
+                  shape.addCylinder(a2coord, b2coord, [a2c[0]/255,a2c[1]/255,a2c[2]/255], .1, 'This is a bad bond')
                 }
                 
               }
@@ -166,8 +180,8 @@ function readFile(file, badids, badatoms, badbonds, opacity){
             bondComp.addRepresentation("buffer", {opacity: opacity});
             break;
     }      
-    // Draw bad atoms!
-    switch(badatoms){
+      // Draw bad atoms!
+      switch(badatoms){
       case 'normal':
         o.addRepresentation("spacefill", {
     radius: .3, opacity:opacity
@@ -194,7 +208,7 @@ function readFile(file, badids, badatoms, badbonds, opacity){
         var shapeComp = stage.addComponentFromObject(shape);
         shapeComp.addRepresentation("buffer", {opacity: opacity}); 
         }
-    }  
+    }
     })
   })
 }
@@ -203,13 +217,13 @@ function readFile(file, badids, badatoms, badbonds, opacity){
 function readMap(file){
   fetch(file).then(function(x){
     stage.loadFile(file, {ext:'ccp4'}).then(function(o){
-      o.addRepresentation('surface', {color:'orange', isolevel:2, smooth:40, boxSize:5, contour:true, wrap:true})
+      o.addRepresentation('surface', {color:'orange', isolevel:2, smooth:40, boxSize:5, contour:true, wrap:true, opacity:.2})
     })
   })
 }
 
 readMap('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072-event_2_1-BDC_0.27_map.native.P1.ccp4')
 
-readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072_0.mol', badids=[0,1,2,3,4,11,12,13], badatoms = 'spiky', badbonds = 'dashed', opacity = 1, glow=true);
-//readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0104_0.mol', badids=[15,14,13,12], badatoms = 'spiky', badbonds = 'normal', opacity=.2);
-//readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0161_0.mol', badids=[0,1,2,3], badatoms='spiky', badbonds='normal', opacity=.2);
+readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072_0.mol', badids=[0,1,2,3,4,5,10,11,12,13], badatoms = 'spiky', badbonds = 'tritone', opacity = 1, glow=0);
+readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0104_0.mol', badids=[15,14,13,12],  badatoms = 'spiky', badbonds = 'tritone', opacity = 1, glow=0);
+readFile('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0161_0.mol', badids=[0,1,2,3],  badatoms = 'spiky', badbonds = 'tritone', opacity = 1, glow=0);
