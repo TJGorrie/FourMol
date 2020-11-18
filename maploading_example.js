@@ -28,7 +28,7 @@ function readMap(file, colour){
 readPDB('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072_0A/Mpro-x0072_0A_apo.pdb', 'cartoon')
 
 readMol('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072_0A/Mpro-x0072_0A.mol', 'tomato')
-// The _event_0.ccp4 maps copied do not seem to render but the maps appear to. The maps also rended when loaded in manually?
+// The eventmaps I have copied do not appear to have any densities associated, so demonstrating with map files.
 readMap('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0072_0A/Mpro-x0072_0A_2fofc.map', 'tomato')
 
 readMol('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x0104_0A/Mpro-x0104_0A.mol', 'limegreen')
