@@ -154,7 +154,7 @@ readFileFixedStyle('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mp
 	badcomments = `;;`)
 
 readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_event_0.ccp4', 
-	colour="magenta", 
+	colour="orange", 
 	opacity=.5, 
 	isolevel=1, 
 	smooth=10, 
