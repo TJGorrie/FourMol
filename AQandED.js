@@ -132,8 +132,6 @@ function readFileFixedStyle(file, badids, badcomments){
 
 function readMap(file, colour, opacity, isolevel, smooth, boxSize, wireframe){
   fetch(file).then(function(x){
-    console.log("Colour is:")
-    console.log(colour)
     stage.loadFile(file, {ext:'ccp4'}).then(function(o){
       o.addRepresentation('surface', {
         color: colour, 
