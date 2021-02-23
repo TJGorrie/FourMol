@@ -111,7 +111,8 @@ function readFileFixedStyle(file, badids, badcomments){
                       o.object.atomStore.z[badids[id]]
                      ];
         atom_label = 'atom: '.concat(atom_info_array[badids[id]], ' | ', badcomments[id])
-        shape.addSphere(origin, [0,0,0], .2, atom_label);
+        shape.addSphere(origin, [0,0,0], .2, atom_label); // Hack to get atom labels to render.
+        // Probably need to create a new shape constructor, with minimum opacity and then render it as needed...
         let m = refmesh.map(function (v,i) {return origin[i % 3] + v;});
         let eleC = ElementColors[o.object.atomMap.list[badids[id]].element]
         var col2 = Array(m.length).fill(1).map(function (v,i){
