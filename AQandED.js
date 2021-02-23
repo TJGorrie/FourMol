@@ -130,19 +130,34 @@ function readFileFixedStyle(file, badids, badcomments){
   });
 };
 
-function readMap(file){
+function readMap(file, colour, opacity, isolevel, smooth, boxSize, wireframe){
   fetch(file).then(function(x){
+    console.log("Colour is:")
+    console.log(colour)
     stage.loadFile(file, {ext:'ccp4'}).then(function(o){
-      o.addRepresentation('surface', {color:'orange', isolevel:1, smooth:10, boxSize:4, contour:true, wrap:true, opacity:1})
+      o.addRepresentation('surface', {
+        color: colour, 
+        isolevel: isolevel, 
+        smooth: smooth, 
+        boxSize: boxSize, 
+        contour: wireframe===true, 
+        wrap: true, 
+        opacity: opacity, 
+        opaqueBack: false})
     })
   })
 }
 
-readMap('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_event_0.ccp4')
+
 readFileFixedStyle('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A.mol', 
-	badids = '2;7;8;9;11;12;16', 
-	badcomments = `Not Explained by Density;I just don\'tlike this atom;More Crazy ideas;A Bad Atom;Lorem Ipsum Dolor Sit Amet;This is just a load of blank space                                                                                                                                                         ;Nope
-NopeNope
-Nope
-Nope
-NOPE`)
+	badids = '5;6;12', 
+	badcomments = `;;`)
+
+readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_event_0.ccp4', 
+	colour="magenta", 
+	opacity=.5, 
+	isolevel=1, 
+	smooth=10, 
+	boxSize=4, 
+	wireframe=false)
+
