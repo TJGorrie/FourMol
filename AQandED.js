@@ -111,14 +111,15 @@ function readFileFixedStyle(file, badids, badcomments){
                       o.object.atomStore.z[badids[id]]
                      ];
         atom_label = 'atom: '.concat(atom_info_array[badids[id]], ' | ', badcomments[id])
-        shape.addSphere(origin, [0,0,0], .2, atom_label); // Hack to get atom labels to render.
-        // Probably need to create a new shape constructor, with minimum opacity and then render it as needed...
+
         let m = refmesh.map(function (v,i) {return origin[i % 3] + v;});
         let eleC = ElementColors[o.object.atomMap.list[badids[id]].element]
         var col2 = Array(m.length).fill(1).map(function (v,i){
           return eleC[i%3]/255
         }); 
-        var col = new Float32Array(col2)          
+        var col = new Float32Array(col2)    
+        shape.addSphere(origin, col, .2, atom_label); // Hack to get atom labels to render.
+        // Probably need to create a new shape constructor, with minimum opacity and then render it as needed...
         var meshBuffer = new NGL.MeshBuffer( {
               position: new Float32Array(m),
               color: col
@@ -150,7 +151,7 @@ function readMap(file, colour, opacity, isolevel, smooth, boxSize, wireframe){
 
 readFileFixedStyle('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A.mol', 
 	badids = '5;6;12', 
-	badcomments = `;;`)
+	badcomments = `This Atom is Garbage; lorem ipsum dolor sit amet; I am not really convinced by the electron density.`)
 
 readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_event_0.ccp4', 
 	colour="orange", 
@@ -159,4 +160,3 @@ readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10
 	smooth=10, 
 	boxSize=4, 
 	wireframe=false)
-
