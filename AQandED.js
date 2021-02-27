@@ -114,11 +114,11 @@ function readFileFixedStyle(file, badids, badcomments){
 
         let m = refmesh.map(function (v,i) {return origin[i % 3] + v;});
         let eleC = ElementColors[o.object.atomMap.list[badids[id]].element]
-        var col2 = Array(m.length).fill(1).map(function (v,i){
+        let col2 = Array(m.length).fill(1).map(function (v,i){
           return eleC[i%3]/255
         }); 
-        var col = new Float32Array(col2)    
-        shape.addSphere(origin, col, .2, atom_label); // Hack to get atom labels to render.
+        let col = new Float32Array(col2)    
+        let sphere = shape.addSphere(origin, [0,0,0,0], .2, atom_label); // Hack to get atom labels to render.
         // Probably need to create a new shape constructor, with minimum opacity and then render it as needed...
         var meshBuffer = new NGL.MeshBuffer( {
               position: new Float32Array(m),
@@ -148,6 +148,16 @@ function readMap(file, colour, opacity, isolevel, smooth, boxSize, wireframe){
   })
 }
 
+function readPDB(file){
+  fetch(file).then(function(x){
+    stage.loadFile(file, {ext:'pdb'}).then(function(o){
+      o.addRepresentation('cartoon')
+      //o.addRepresentation('line')
+    })
+  })
+}
+
+readPDB('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_apo.pdb')
 
 readFileFixedStyle('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A.mol', 
 	badids = '5;6;12', 
@@ -158,5 +168,5 @@ readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10
 	opacity=.5, 
 	isolevel=1, 
 	smooth=10, 
-	boxSize=4, 
+	boxSize=4.1, 
 	wireframe=false)
