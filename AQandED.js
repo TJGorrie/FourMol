@@ -152,7 +152,6 @@ function readPDB(file){
   fetch(file).then(function(x){
     stage.loadFile(file, {ext:'pdb'}).then(function(o){
       o.addRepresentation('cartoon')
-      //o.addRepresentation('line')
     })
   })
 }
