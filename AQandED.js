@@ -4,6 +4,8 @@ refmesh=[0.1,
 // Convert all elements to RGB http://jmol.sourceforge.net/jscolors/
 // Probably don't need all of these!
 // Divide these by 255...
+
+
 var ElementColors = {'H':  [255,255,255], 'HE': [217,255,255],
   'LI': [204,128,255],
   'BE': [194,255,0],
@@ -21,6 +23,34 @@ var ElementColors = {'H':  [255,255,255], 'HE': [217,255,255],
   'S': [255,255,48],
   'CL': [31,240,31]
 }
+
+function drawStripyBond(atom_a, atom_b, color_a, color_b, label, size=0.1, shape, alt){
+  var sx = atom_b[0] - atom_a[0]; 
+  var sy = atom_b[1] - atom_a[1];
+  var sz = atom_b[2] - atom_a[2];
+  length = (sx**2 + sy**2 + sz**2)**.5;
+  var unitSlopeX = sx / length;
+  var unitSlopeY = sy / length;
+  var unitSlopeZ = sz / length;
+  atom_a2 = [atom_a[0] + (unitSlopeX * .1),
+        atom_a[1] + (unitSlopeY * .1),
+        atom_a[2] + (unitSlopeZ * .1)
+        ];
+  atom_b2 = [atom_b[0] - (unitSlopeX * .1),
+        atom_b[1] - (unitSlopeY * .1),
+        atom_b[2] - (unitSlopeZ * .1)
+        ];
+  a1c = color_a
+  a2c = color_b
+  bond_label = label
+  shape.addCylinder(atom_a, atom_b, [a1c[0]/255,a1c[1]/255,a1c[2]/255], size, bond_label); // bond comment goes here! ,'this is bad'
+  if (alt){
+    shape.addCylinder(atom_a2, atom_b2, [208/255,208/255,224/255], size , bond_label); // bond comment goes here! ,'this is bad'
+  } else {
+    shape.addCylinder(atom_a2, atom_b2, [a2c[0]/255,a2c[1]/255,a2c[2]/255], size, bond_label); // bond comment goes here! ,'this is bad'
+  }  
+}
+
 var stage = new NGL.Stage( "viewport" );
 
 // Handle window resizing
@@ -56,55 +86,61 @@ function readFileFixedStyle(file, badids, badcomments){
           aspectRatio:2, sele:'@'.concat(diff), multipleBond:'symmetric'});
 
       let shape = new NGL.Shape("shape", {dashedCylinder: true});
-      bonds = o.object.bondStore;        
+      bonds = o.object.bondStore;
       n = bonds.atomIndex1;
       m = bonds.atomIndex2;
-
+      order = bonds.bondOrder;
+      // Render Bonds
       n.forEach((num1, index) => {
         const num2 = m[index];
+        const bondorder = order[index]
+
         if (badids.includes(num1) || badids.includes(num2) ){
-                acoord = [o.object.atomStore.x[num1],
-                          o.object.atomStore.y[num1],
-                          o.object.atomStore.z[num1]];
-                bcoord = [o.object.atomStore.x[num2],
-                          o.object.atomStore.y[num2],
-                          o.object.atomStore.z[num2]];      
-                var sx = bcoord[0] - acoord[0]; 
-                var sy = bcoord[1] - acoord[1];
-                var sz = bcoord[2] - acoord[2];
-                
-                length = (sx**2 + sy**2 + sz**2)**.5;
-                var unitSlopeX = sx / length;
-                var unitSlopeY = sy / length;
-                var unitSlopeZ = sz / length;
-                
-                a2coord = [
-                           acoord[0] + (unitSlopeX * .1),
-                           acoord[1] + (unitSlopeY * .1),
-                           acoord[2] + (unitSlopeZ * .1)
-                          ];
-                b2coord = [
-                           bcoord[0] - (unitSlopeX * .1),
-                           bcoord[1] - (unitSlopeY * .1),
-                           bcoord[2] - (unitSlopeZ * .1)
-                          ];
-                // Create handle for count is exceeded!
-                // order is startxyz, endxyz, colour, radius, name
-                a1c = ElementColors[o.object.atomMap.list[num1].element];
-                a2c = ElementColors[o.object.atomMap.list[num2].element];
-                
-                bond_label = 'bond: '.concat(atom_info_array[num1],'-', atom_info_array[num2])
-                
-                shape.addCylinder(acoord, bcoord, [a1c[0]/255,a1c[1]/255,a1c[2]/255], .1, bond_label); // bond comment goes here! ,'this is bad'
+          acoord = [o.object.atomStore.x[num1],
+                    o.object.atomStore.y[num1],
+                    o.object.atomStore.z[num1]];
+          bcoord = [o.object.atomStore.x[num2],
+                    o.object.atomStore.y[num2],
+                    o.object.atomStore.z[num2]]; 
+          colora = ElementColors[o.object.atomMap.list[num1].element];
+          colorb = ElementColors[o.object.atomMap.list[num2].element];
+          label = 'bond: '.concat(atom_info_array[num1],'-', atom_info_array[num2])
+          alt = o.object.atomMap.list[num1].element == o.object.atomMap.list[num2].element
           
-                if (o.object.atomMap.list[num1].element == o.object.atomMap.list[num2].element){
-                  shape.addCylinder(a2coord, b2coord, [208/255,208/255,224/255], .1 , bond_label); // bond comment goes here! ,'this is bad'
-                } else {
-                  shape.addCylinder(a2coord, b2coord, [a2c[0]/255,a2c[1]/255,a2c[2]/255], .1, bond_label); // bond comment goes here! ,'this is bad'
-                }   
-        }
+          bond_size = .05 / (0.5 * bondorder)
+          //const vShift = new Vector3()
+          if (bondorder === 1) {
+            drawStripyBond(acoord, bcoord, colora, colorb, label, bond_size, shape, alt)
+          }
+          if (bondorder === 2) {
+            // This is incorrect
+            // Look here for inspiration
+	    // https://github.com/nglviewer/ngl/blob/4ab8753c38995da675e9efcae2291a298948ccca/src/structure/structure.ts#L773
+            acoord1 = acoord.map(function(x){return x + x*.01})
+            bcoord1 = bcoord.map(function(x){return x + x*.01})
+            
+            acoord2 = acoord.map(function(x){return x - x*.01})
+            bcoord2 = bcoord.map(function(x){return x - x*.01})
+            
+            drawStripyBond(acoord1, bcoord1, colora, colorb, label, bond_size, shape, alt)
+            drawStripyBond(acoord2, bcoord2, colora, colorb, label, bond_size, shape, alt)
+          }
+          if (bondorder === 3) {
+	    // This is incorrect
+            // Look here for inspiration
+            // https://github.com/nglviewer/ngl/blob/4ab8753c38995da675e9efcae2291a298948ccca/src/structure/structure.ts#L773
+            acoord1 = acoord.map(function(x){return x - x*.005})
+            bcoord1 = bcoord.map(function(x){return x - x*.005})
+            acoord2 = acoord.map(function(x){return x + x*.005})
+            bcoord2 = bcoord.map(function(x){return x + x*.005})
+            drawStripyBond(acoord, bcoord, colora, colorb, label, bond_size, shape, alt)
+            drawStripyBond(acoord1, bcoord1, colora, colorb, label, bond_size, shape, alt)
+            drawStripyBond(acoord2, bcoord2, colora, colorb, label, bond_size, shape, alt)
+          }
+      }
       }); 
       var bondComp = stage.addComponentFromObject(shape);
+      // Render Atoms
       for(id in badids){
         let origin = [o.object.atomStore.x[badids[id]], 
                       o.object.atomStore.y[badids[id]], 
@@ -159,13 +195,13 @@ function readPDB(file){
 readPDB('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_apo.pdb')
 
 readFileFixedStyle('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A.mol', 
-	badids = '5;6;12', 
-	badcomments = `This Atom is Garbage; lorem ipsum dolor sit amet; I am not really convinced by the electron density.`)
+  badids = '0;1;12', 
+  badcomments = `a;b;c;This Atom is Garbage; lorem ipsum dolor sit amet; I am not really convinced by the electron density.`)
 
-readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_event_0.ccp4', 
-	colour="orange", 
-	opacity=.5, 
-	isolevel=1, 
-	smooth=10, 
-	boxSize=4.1, 
-	wireframe=false)
+//readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_event_0.ccp4', 
+//  colour="orange", 
+//  opacity=.5, 
+//  isolevel=1, 
+//  smooth=10, 
+//  boxSize=4.1, 
+//  wireframe=false)
