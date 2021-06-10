@@ -97,16 +97,16 @@ function readFileFixedStyle(file, badids, badcomments){
       n = bonds.atomIndex1;
       m = bonds.atomIndex2;
       order = bonds.bondOrder;
-      
-      const vt = new THREE.Vector3()
-      const vShortening = new THREE.Vector3()
       const vShift = new THREE.Vector3()
-      
       o.object.getBondProxy().calculateShiftDir(vShift)
-      absOffset = (1 - .4) * atomRadius
+      absOffset = (1 - .4) * .3
+      o.object.getBondProxy().calculateShiftDir(vShift)
       vShift.multiplyScalar(absOffset)
       // Render Bonds
+      order[0] = 3
+      order[1] = 2
       n.forEach((num1, index) => {
+        let vt = new THREE.Vector3()
         const num2 = m[index];
         const bondorder = order[index]
 
@@ -128,14 +128,19 @@ function readFileFixedStyle(file, badids, badcomments){
             drawStripyBond(acoord, bcoord, colora, colorb, label, bond_size, shape, alt)
           }
           if (bondorder === 2) {
+            //vt.addVectors(acoord as any, vShift)
             // This is incorrect
             // Look here for inspiration
       // https://github.com/nglviewer/ngl/blob/4ab8753c38995da675e9efcae2291a298948ccca/src/structure/structure.ts#L773
-            acoord1 = acoord.map(function(x){return x + x*.01})
-            bcoord1 = bcoord.map(function(x){return x + x*.01})
+            acoord1 = [acoord[0] - vShift.x, acoord[1] - vShift.y, acoord[2] - vShift.z]
+            bcoord1 = [bcoord[0] - vShift.x, bcoord[1] - vShift.y, bcoord[2] - vShift.z]
+            acoord2 = [acoord[0] + vShift.x, acoord[1] + vShift.y, acoord[2] + vShift.z]
+            bcoord2 = [bcoord[0] + vShift.x, bcoord[1] + vShift.y, bcoord[2] + vShift.z]
+            //acoord1 = acoord.map(function(x){return x + x*.01})
+            //bcoord1 = bcoord.map(function(x){return x + x*.01})
             
-            acoord2 = acoord.map(function(x){return x - x*.01})
-            bcoord2 = bcoord.map(function(x){return x - x*.01})
+            //acoord2 = acoord.map(function(x){return x - x*.01})
+            //bcoord2 = bcoord.map(function(x){return x - x*.01})
             
             drawStripyBond(acoord1, bcoord1, colora, colorb, label, bond_size, shape, alt)
             drawStripyBond(acoord2, bcoord2, colora, colorb, label, bond_size, shape, alt)
@@ -144,10 +149,10 @@ function readFileFixedStyle(file, badids, badcomments){
       // This is incorrect
             // Look here for inspiration
             // https://github.com/nglviewer/ngl/blob/4ab8753c38995da675e9efcae2291a298948ccca/src/structure/structure.ts#L773
-            acoord1 = acoord.map(function(x){return x - x*.005})
-            bcoord1 = bcoord.map(function(x){return x - x*.005})
-            acoord2 = acoord.map(function(x){return x + x*.005})
-            bcoord2 = bcoord.map(function(x){return x + x*.005})
+            acoord1 = [acoord[0] - vShift.x, acoord[1] - vShift.y, acoord[2] - vShift.z]
+            bcoord1 = [bcoord[0] - vShift.x, bcoord[1] - vShift.y, bcoord[2] - vShift.z]
+            acoord2 = [acoord[0] + vShift.x, acoord[1] + vShift.y, acoord[2] + vShift.z]
+            bcoord2 = [bcoord[0] + vShift.x, bcoord[1] + vShift.y, bcoord[2] + vShift.z]
             drawStripyBond(acoord, bcoord, colora, colorb, label, bond_size, shape, alt)
             drawStripyBond(acoord1, bcoord1, colora, colorb, label, bond_size, shape, alt)
             drawStripyBond(acoord2, bcoord2, colora, colorb, label, bond_size, shape, alt)
@@ -210,7 +215,7 @@ function readPDB(file){
 readPDB('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_apo.pdb')
 
 readFileFixedStyle('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A.mol', 
-  badids = '0;1;12', 
+  badids = '0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16', 
   badcomments = `a;b;c;This Atom is Garbage; lorem ipsum dolor sit amet; I am not really convinced by the electron density.`)
 
 //readMap(file='https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mpro-x10555_0A/Mpro-x10555_0A_event_0.ccp4', 
@@ -220,3 +225,4 @@ readFileFixedStyle('https://raw.githubusercontent.com/TJGorrie/FourMol/master/Mp
 //  smooth=10, 
 //  boxSize=4.1, 
 //  wireframe=false)
+
