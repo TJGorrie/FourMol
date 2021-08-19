@@ -125,8 +125,8 @@ function readPDBwithBadIDS(pdb,atomset){
     });
     let res_ids2 = Array.from(new Set(res_ids));
     o.addRepresentation('line', {
-      linewidth:1, multipleBond:'symmetric'//, 
-      //sele: ''.concat(res_ids2.join(', '))
+      linewidth:1, multipleBond:'symmetric', 
+      sele: 'NOT @'.concat(atomset.pdbatomid.join(', '))
     });
     bonds = o.object.bondStore;
     n = bonds.atomIndex1;
